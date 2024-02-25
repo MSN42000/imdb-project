@@ -16,6 +16,7 @@ import time
 from movie import Movie
 from pathlib import Path
 import os
+import logging
 
 URL = "https://caching.graphql.imdb.com/"
 QTY = 400
@@ -117,7 +118,7 @@ def is_id_none(data):
     return False
 
 
-def main(url: str, params: dict, headers: dict):
+def main(url: str, params: dict, headers: dict, logger):
     start_time = time.time()
     end_cursor = None
     movie_details = {}
@@ -132,8 +133,7 @@ def main(url: str, params: dict, headers: dict):
         for movie in extract_movies(json_data):
             movie_details[movie.id] = movie.to_dict()
 
-        print(len(movie_details), time.time() - start_time)
-        break
+        logger.debug(f"batch: {i}, n_movies_so_far: {len(movie_details)}, time_so_far: {time.time() - start_time}")
     
     dump_location = str(Path(os.getcwd(), "..", "data", "data.json"))
     with open(dump_location, "w") as file:
@@ -143,4 +143,6 @@ def main(url: str, params: dict, headers: dict):
 
 
 if __name__ == "__main__":
-    main(URL, params=params, headers=headers)
+    logger = logging.getLogger("logger")
+    logger.setLevel(logging.WARNING)
+    main(URL, params=params, headers=headers, logger=logger)
